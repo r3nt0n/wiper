@@ -13,6 +13,7 @@ __version__ = '1.0'
 __status__  = 'Development'
 
 import os, subprocess
+from pathlib import Path
 
 # wmi impoted in OS systems
 
@@ -41,7 +42,7 @@ def find_files(root_path, files_to_exclude):
                     exclude = True
                     break   # Don't keep testing files excluded if it matches one
             if not exclude:
-                files_list.append(os.path.join(root, name))
+                files_list.append(Path(root) / name)
     return files_list
 
 
