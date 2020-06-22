@@ -27,6 +27,7 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 
 ## Usage
 ```
+Absolute and relative paths are allowed, but no wildcards.
 
   -h, --help            show this help message and exit
   -i, --interactive     interactive mode, the script will guide you

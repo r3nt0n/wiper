@@ -17,6 +17,7 @@ from shutil import disk_usage, rmtree
 from pathlib import Path
 from random import getrandbits
 
+from r3ntlib.os_ops import run_command
 from r3ntlib.color import color
 
 ################################################################################
@@ -61,6 +62,28 @@ def random_wipe(path, mode, size_to_write):
         print('{}  [!]{} ERROR: {}'.format(color.RED,color.END,exception))
     return status
 
+def dd_random_wipe(linux_path):
+    '''Random wipe using dd tool on Linux OS.
+       Returns 6 if uncompatible operative system is detected
+       Returns 4 if error triggered trying to run subprocess
+       Returns standard dd return-codes if task was completed (0)
+    '''
+    status = 6
+    if os.name == 'posix':
+        try:
+            bytes_to_write = disk_usage(linux_path)[2]
+            print('  {}[+]{} Starting to wipe {}{}{} ({}{}{} bytes) with dd tool...\r\n'.format(color.ORANGE, color.END,
+                                                                                            color.ORANGE,linux_path,color.END,
+                                                                                            color.PURPLE,bytes_to_write,color.END))
+            command = 'dd if=/dev/urandom of={} bs=4096 status=progress'.format(linux_path)
+            status = run_command(command)
+        except Exception as exception:
+            status = 4
+            print('{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
+    return status
+
+
+
 ################################################################################
 
 def wipe_free_space(path):
@@ -77,6 +100,10 @@ def wipe_free_space(path):
         random_wipe(tempfile, 'ab+', free_space)
     except Exception as exception:
         print('{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
+    finally:
+        # Makes sure to clean-up tempfile
+        try: os.remove(tempfile)
+        except: pass
 
 def wipe_file(path):
     """Wipe a single file

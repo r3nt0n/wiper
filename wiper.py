@@ -29,9 +29,10 @@ __status__  = 'Development'
 
 ################################################################################
 
-import os, sys, time
+import os, sys, platform, time
 import argparse
 from shutil import rmtree
+from socket import gethostname
 
 from r3ntlib import wiper_ops
 from r3ntlib import os_ops
@@ -54,6 +55,9 @@ def read_args():
     parser.add_argument('-p', '--path', action='store', metavar='path',
                         dest='path', type=str, default=False,
                         help='path to partition/file you want to wipe (required in non-interactive mode)')
+    parser.add_argument('-r', '--root-path', action='store', metavar='root_path',
+                        dest='root_path', type=str, default=False,
+                        help='set a custom root path')
     return parser
 
 def banner():
@@ -76,20 +80,42 @@ def banner():
     print("  |     ^^^^^^^^^^^^^^^^^^^^                       {}{}{}  |".format(author_color,__author__,color.END)); time.sleep(delay_per_line)
     print("  +--------------------------------------------------------+"); time.sleep(delay_per_line)
     print(u'  +-- {}MANUAL SELECTION MODE{} -------------------------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}0{}] Wipe all free space in a choosen partition         |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}1{}] Wipe a single file/all files under a choosen path  |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}1{}] Wipe all free space in a choosen partition         |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}2{}] Wipe a single file/all files under a choosen path  |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +-- {}AUTO SEARCH MODE{} ------------------------------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}2{}] Wipe my temporal directory                         |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}3{}] Wipe my personal directory (includes tempdir)      |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}3{}] Wipe my temporal directory                         |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}4{}] Wipe my personal directory (includes tempdir)      |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +-- {}AUTO SEARCH MODE (elevated privileges){} --------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}4{}] Wipe all users temporal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}4{}] Wipe all users personal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}5{}] Wipe all swap partitions/pagination files          |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}5{}] Wipe all users temporal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}6{}] Wipe all users personal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}7{}] Wipe all swap partitions/pagination files          |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +--------------------------------------------------------+'); time.sleep(delay_per_line)
-    print(u'  | [{}9{}] Exit                                               |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  +--------------------------------------------------------+'); time.sleep(delay_per_line)
+    print(u'  | [{}0{}] Exit                                               |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  +--------------------------------------------------------+\r\n'); time.sleep(delay_per_line)
+
+def is_empty(string):
+    """Checks if a string is empty.
+       Returns True or False
+    """
+    empty = False
+    if len(str(string)) == 0: empty = True
+    return empty
+
+def set_root_path():
+    print(u'  {}[!]{} System detected: {}{}{} (running {}{}{}) '.format(color.ORANGE, color.END,
+                                                                        color.ORANGE, gethostname(), color.END,
+                                                                        color.PURPLE, platform.system(), color.END))
+    print(u'  {}[!]{} By default, {}auto-search{} mode targets the booted OS.'.format(color.ORANGE, color.END,
+                                                                                      color.PURPLE,color.END))
+    print(u'  {}[!]{} To wipe an unbooted system, you can provide the root'.format(color.ORANGE,color.END))
+    print(u'  {}[!]{} path where is mounted (e.g. /media/mydrive), or PRESS'.format(color.ORANGE, color.END))
+    print(u'  {}[!]{} ENTER to continue...'.format(color.ORANGE, color.END))
+    root_path = input(u'  {}[?]{} '.format(color.PURPLE, color.END))
+    if not is_empty(root_path):
+        os.chdir(root_path)
+    return root_path
     
-def wipe(files_to_wipe, path):
+def wipe(files_to_wipe, path_to_remove):
     # Wipe each file
     counter = 0
     for f in files_to_wipe:
@@ -97,10 +123,10 @@ def wipe(files_to_wipe, path):
         if wiped: counter += 1
     print('  {}[!]{} Files wiped: {}{}{}'.format(color.GREEN, color.END,color.PURPLE,counter,color.END))
     # Remove the empty tree if path given was a dir AFTER ALL OVERWRITES
-    if os.path.isdir(path):
+    if os.path.isdir(path_to_remove):
         try:
             print('  {}[+]{} Removed empty tree (path given was a dir)'.format(color.GREEN, color.END))
-            rmtree(path)
+            rmtree(path_to_remove)
         except Exception as exception: print('{}  [!]{} ERROR: {}'.format(color.RED,color.END,exception))
 
 
@@ -114,6 +140,7 @@ def main():
         args = parser.parse_args()
         interactive = args.interactive
         path = args.path
+        custom_root_path = args.root_path
         # Print help and exit when runs without args
         if len(sys.argv) == 1: parser.print_help(sys.stdout); sys.exit(4)
         # Print help and exit when runs non-interactive without path
@@ -122,13 +149,14 @@ def main():
             # Clear screen and print banner with options in interactive mode
             os_ops.clear()
             banner()
+            custom_root_path = set_root_path()
             print(u'\r\n  {}[+]{} Your current working directory is:'.format(color.ORANGE, color.END))
             print(u'  {}[+]{} {}{}{}'.format(color.ORANGE, color.END, color.ORANGE, os.getcwd(), color.END))
         while True:
             # Get opt and check it
-            opt = input(u'\r\n  {}[?]{} Choose an option [{}0-4{}]: '.format(color.PURPLE,color.END,color.ORANGE,color.END))
+            opt = input(u'\r\n  {}[?]{} Choose an option [{}0-9{}]: '.format(color.PURPLE,color.END,color.ORANGE,color.END))
             # 0. Wipes all free space in the given paths
-            if opt == '0':
+            if opt == '1':
                 # Get the path from user input
                 path = input(u'  {}[?]{} Enter the path you want to wipe: '.format(color.PURPLE,color.END))
                 status = wiper_ops.wipe_free_space(path)
@@ -137,7 +165,7 @@ def main():
                 else:
                     print(u'  {}[!]{} An error has occurred'.format(color.RED, color.END))
             # 1. Secure delete all data in the given path
-            elif opt == '1':
+            elif opt == '2':
                 # Get the path from user input
                 path = input(u'  {}[?]{} Enter the path you want to wipe: '.format(color.PURPLE, color.END))
                 # Get actual script absolute path to exclude from a deletion task
@@ -150,24 +178,43 @@ def main():
                 print('  {}[!]{} Files founded: {}{}{}'.format(color.GREEN, color.END, color.PURPLE, len(files_to_wipe), color.END))
                 wipe(files_to_wipe, path)
                
-            elif opt == '2':
-                pass
             elif opt == '3':
                 pass
             elif opt == '4':
                 pass
             elif opt == '5':
-                if os.name == 'nt':
-                    pass
-                if os.name == 'posix':
-                    pass
-                    # subprocess -> dd if=/dev/random of=$swappartition
-            # ...
-            # 2. Get variable paths relatives to personal directories, swap file/partitions
-            elif opt == 'get-paths':
-                personal_dirs, swap_dirs = os_ops.get_variable_paths()
-                # ...
-            elif opt == '9':
+                pass
+            elif opt == '6':
+                pass
+            elif opt == '7':
+                print('  {}[-]{} Looking for swap/pagefiles...'.format(color.ORANGE, color.END))
+                swaplist = os_ops.get_swaps(custom_root_path)
+                if not swaplist:
+                    print(u'  {}[!]{} ERROR: Any swap partition or pagefile found'.format(color.RED, color.END))
+                    if custom_root_path:
+                        print(u'  {}[!]{} Try to run wiper booted on the target system'.format(color.ORANGE, color.END))
+                if (type(swaplist) == str and swaplist.startswith(':ERR:')):
+                    msg = swaplist.split(':ERR:')[1]
+                    print(u'  {}[!]{} ERROR: {}'.format(color.ORANGE, color.END, msg))
+                else:
+                    print(u'  {}[+]{} {} swap/pagefiles founded'.format(color.PURPLE, color.END,len(swaplist)))
+                    for swap in swaplist:
+                        print(u'  {}[+]{} {}'.format(color.ORANGE, color.END,swap))
+                    confirm = input(u'  {}[?]{} Do you want to confirm? (y/n) > '.format(color.PURPLE,color.END))
+                    if (confirm.lower().startswith('y')):
+                        if (os.name == 'nt' or custom_root_path):
+                            for swap in swaplist:
+                                files_to_wipe = (swap)  # Converts to tuple to be iterable inside wipe
+                                wipe(files_to_wipe, path_to_remove=False)
+                        elif (os.name == 'posix'):
+                            for swap in swaplist:
+                                status = wiper_ops.dd_random_wipe(swap)
+                                if str(status) == '0':
+                                    print(u'  {}[+]{} {}{}{} was succesfully wiped.'.format(color.GREEN,color.END,
+                                                                                            color.PURPLE,swap,color.END))
+
+
+            elif opt == '0':
                 interactive = False
             else:
                 print(u'  {}[!]{} Incorrect option.'.format(color.RED, color.END))
