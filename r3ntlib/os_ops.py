@@ -104,15 +104,32 @@ def get_swaps(root_system=False):
                 swap_dirs.append(pf.Caption)
     return swap_dirs
 
-def get_personal_dir(root='/'):
+def get_personal_dirs(root_system=False):
     """Interacts with the OS (Win/Linux) to get paths relatives to personal
        directories and swap files/partitions.
        Returns a list with personal directories founded
     """
-    if os.name == 'posix':
-        personal_dirs = ['$HOME']
+    path = ''
+    personal_dirs = []
+    if os.path.isdir(root_system):
+        if os.name == 'posix':
+            default_homedir = 'home/'
+        elif os.name == 'nt':
+            default_homedir = 'Users/'
+        possible_dirs = os.listdir(Path(root_system) / default_homedir)
+        for pdir in possible_dirs:
+            if os.path.isdir(pdir):
+                personal_dirs.append(pdir)
+    elif os.name == 'posix':
+        path = os.path.expanduser('~/')
     elif os.name == 'nt':
-            personal_dirs = ['%USERPROFILE%', '%HOMEDRIVE%', '%HOMEPATH%']
+            path = R'{}{}'.format('%HOMEDRIVE','%HOMEPATH%')
+
+            path = os.path.expandvars(path)
+    if os.path.isdir(path):
+        personal_dirs.append(path)
+    return personal_dirs
+
 
 if __name__ == '__main__':
     # Tests
