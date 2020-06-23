@@ -51,7 +51,7 @@ def random_wipe(path, mode, size_to_write):
         try:
             if os.path.isfile(path):
                 os.remove(path)
-            print('  {}[+]{} {}{}{} was {}succesfully{} wiped'.format(color.GREEN, color.END,
+            print('  {}[-]{} {}{}{} was {}succesfully{} wiped'.format(color.GREEN, color.END,
                                                                       color.ORANGE, path, color.END,
                                                                       color.GREEN, color.END))
         except Exception as exception:

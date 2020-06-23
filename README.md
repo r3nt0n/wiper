@@ -11,17 +11,22 @@ It has been **designed to make tasks about personal data destruction easier**, t
 
 ## Usage
 ```
+usage: wiper.py [-h] [-i] [-f path] [-p path] [-r path] [-t] [-u] [-T] [-U] [-s]
+
+optional arguments:
   -h, --help            show this help message and exit
   -i, --interactive     interactive mode, the script will guide you
   -f path, --free path  wipe all free space on given path
-  -p path, --path path  path to partition/file you want to wipe (required in non-interactive mode)
-  -r path, --root path  set a custom root path if you want to wipe with auto-search modes an unbooted system
-                        (e.g. /media/drive)
+  -p path, --path path  path to partition/file you want to wipe
+  -r path, --root path  set a custom root path if you want to wipe with auto-search modes
+                        an unbooted system (e.g. /media/drive)
   -t, --temp            auto-search mode: locate actual user temp directory and wipes it
   -u, --home            auto-search mode: locate actual user home directory and wipes it
   -T, --temp-all        auto-search mode: locate all users temp directory and wipes it
   -U, --home-all        auto-search mode: locate all users home directory and wipes it
   -s, --swaps           auto-search mode: locate swap partitions/pagefiles and wipes it
+                        (be careful: UUID swap partitions also will be wiped)
+
 ``` 
 
 ## Features
