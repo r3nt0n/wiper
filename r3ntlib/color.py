@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# r3nt0n
+# mark.r4ns0m (https://www.github.com/R3nt0n/markransom)
+# r3nt0n (https://www.github.com/R3nt0n)
 
 class color:
     PURPLE = '\033[95m'

@@ -51,7 +51,7 @@ def read_args():
     parser.add_argument('-f', '--free',action='store',dest='free',type=str,default=False,metavar='path',
                         help='wipe all free space on given path')
     parser.add_argument('-p', '--path',action='store',dest='path',type=str, default=False,metavar='path',
-                        help='path to partition/file you want to wipe (required in non-interactive mode)')
+                        help='path to partition/file you want to wipe')
 
     parser.add_argument('-r', '--root',action='store',dest='root_path',type=str,default=False,
                         metavar='path',help='set a custom root path if you want to wipe with auto-search modes an unbooted system (e.g. /media/drive)')
@@ -64,7 +64,7 @@ def read_args():
     parser.add_argument('-U', '--home-all', action='store_true',dest='home_all',default=False,
                         help='auto-search mode: locate all users home directory and wipes it')
     parser.add_argument('-s', '--swaps', action='store_true',dest='swaps',default=False,
-                        help='auto-search mode: locate swap partitions/pagefiles and wipes it')
+                        help='auto-search mode: locate swap partitions/pagefiles and wipes it (be careful: UUID swap partitions also will be wiped)')
     return parser
 
 def banner():
@@ -145,7 +145,7 @@ def wipe(path, exclude_script=True):
         for f in files_to_wipe:
             wiped = wiper_ops.wipe_file(f)
             if wiped: counter += 1
-        print(u'  {}[!]{} Files wiped: {}{}{}'.format(color.GREEN, color.END,color.PURPLE,counter,color.END))
+        print(u'  {}[+]{} Files wiped: {}{}{}'.format(color.GREEN, color.END,color.PURPLE,counter,color.END))
         # Remove the empty tree if path given was a dir AFTER ALL OVERWRITES
         if os.path.isdir(path):
             try:
@@ -189,6 +189,7 @@ def main():
             opt = ''
             if interactive:
                 # Get opt and check it
+                path = ''
                 opt = input(u'\r\n  {}[?]{} Choose an option [{}0-9{}]: '.format(color.PURPLE,color.END,color.ORANGE,color.END))
             # 0. Wipes all free space in the given paths
             if (opt == '1' or wipe_free_arg):
@@ -222,16 +223,17 @@ def main():
                         print(u'  {}[+]{} [{}{}{}]  {}'.format(color.GREEN, color.END,
                                                              color.PURPLE,personal_dirs.index(pdir),
                                                              color.END,pdir))
-                if len(personal_dirs) > 1:
-                    pdir = input(u'\r\n  {}[?]{} Choose the one you want to wipe [{}0-{}{}] '.format(color.PURPLE,color.END,
-                                                                                          color.ORANGE,str(len(personal_dirs)-1),
-                                                                                          color.END))
-
-                    if (type(pdir) is not int or int(pdir) >= len(personal_dirs)):
-                        print(u'  {}[!]{} ERROR: Bad option choosen'.format(color.RED, color.END))
-                        continue
+                if len(personal_dirs) > 0:
+                    if len(personal_dirs) == 1:
+                        pdir = personal_dirs[0]
                     else:
-                        wipe(pdir)
+                        pdir = input(u'\r\n  {}[?]{} Choose the one you want to wipe [{}0-{}{}] '.format(color.PURPLE,color.END,
+                                                                                                  color.ORANGE,str(len(personal_dirs)-1),
+                                                                                                  color.END))
+                        if (type(pdir) is not int or int(pdir) >= len(personal_dirs)):
+                            print(u'  {}[!]{} ERROR: Bad option choosen'.format(color.RED, color.END))
+                            continue  # Back to menu
+                    wipe(pdir)
             elif (opt == '5' or wipe_temp_all_arg):
                 pass
             elif (opt == '6' or wipe_home_all_arg):
