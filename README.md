@@ -2,7 +2,7 @@
 ![[Python 3.2+](https://github.com/R3nt0n)](http://img.shields.io/badge/python-3.2+-blue.svg)
 ![[GPL-3.0 License](https://github.com/R3nt0n)](https://img.shields.io/badge/license-GPL%203.0-brightgreen.svg)
 
-<p align="center"><img src="https://github.com/R3nt0n/wiper/blob/master/img/wiper-0.6.gif" /></p>
+<p align="center"><img src="https://github.com/R3nt0n/wiper/blob/master/img/wiper-0.9.gif" /></p>
 
 # wiper
 Toolkit to perform secure destruction of sensitive virtual data, temporary files and swap memories.
