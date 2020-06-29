@@ -39,7 +39,7 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 + **This is not a backup tool**: the data will be unrecoverable, so **be sure to backup all the files you want to keep before wipe it**.
 + You can **wipe single/multiple files** and **wipe free space** by manual selection.
 + Auto-search mode is able to **scan and suggest sensitive paths that are tipically candidates to wipe**.
-+ It **overwrites existing data or free space** with one-pass pseudo-random bytes.
++ It **overwrites existing data or free space** with one-pass **pseudo-random/ones/zeros** bytes and also combine them.
 + **Paths** provided **can be absolute or relative**, but **don't allow wildcards**.
 + Be careful **when you overwrite whole partitions** (like wipe swaps feature), the **device block** (info like partitions UUID) **will be destroyed**.
 
@@ -48,6 +48,7 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 + wmi (if you want to use auto-search mode booted on a Windows OS)
 
 ## Changelist
++ One-pass overwrite methods already implemented: random, ones and zeros. 
 + Fixing menu bug and updating usage.
 + Added auto-search personal dirs platform independent. Added arguments for all interactive options (everything can be run from CLI or inside interactive mode)
 ##### 0.6~beta version notes (20/06/2020)
@@ -60,9 +61,7 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 
 ## TODO list
 + Implement temp, home_all and temp_all features.
-+ Add **other one-pass overwriting methods** to:
-    + choose between them in a **single-pass mode**
-    + combine them in a **multi-pass mode**
++ Write the logic to switch between different overwrite methods already implemented (ones, zeros and random) and allow user to combines it.
 
 
 ## Legal disclaimer

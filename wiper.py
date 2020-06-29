@@ -210,7 +210,8 @@ def main():
                 wipe(path)
 
             elif (opt == '3' or wipe_temp_arg):
-                pass
+                print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
+                continue
             # Wipes user personal dir
             elif (opt == '4' or wipe_home_arg):
                 personal_dirs = os_ops.get_personal_dirs()
@@ -235,9 +236,11 @@ def main():
                             continue  # Back to menu
                     wipe(pdir)
             elif (opt == '5' or wipe_temp_all_arg):
-                pass
+                print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
+                continue
             elif (opt == '6' or wipe_home_all_arg):
-                pass
+                print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
+                continue
             # Wipes swaps/pagefiles
             elif (opt == '7' or wipe_swaps_arg):
                 print(u'  {}[-]{} Searching swap/pagefiles...'.format(color.ORANGE, color.END))
@@ -259,7 +262,7 @@ def main():
                             wipe(swaplist)
                         elif (os.name == 'posix'):
                             for swap in swaplist:
-                                status = wiper_ops.dd_random_wipe(swap)
+                                status = wiper_ops.dd_linux_wipe(swap)
                                 if str(status) == '0':
                                     print(u'  {}[+]{} {}{}{} was succesfully wiped.'.format(color.GREEN,color.END,
                                                                                             color.PURPLE,swap,color.END))

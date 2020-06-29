@@ -22,14 +22,16 @@ from r3ntlib.color import color
 
 ################################################################################
 
-def random_wipe(path, mode, size_to_write):
+def wipe_bytes(path, mode, size_to_write, method='r'):
     """Overwrite the given path with n random bytes (n is the size given in bytes)
            Returns a status code:
            0 - OK, 1-Space wasn't even filled randomly, 2-Space wasn't secure delete
            Arguments:
-           path -- root directory where it begins to search.
-           mode -- 'ab+' for wipe free space in the given path,
-                   'wb' to overwrite an existing file
+           path          -- root directory where it begins to search.
+           mode          -- 'ab+' for wipe free space in the given path,
+                            'wb' to overwrite an existing file
+           size-to-write -- size in bytes to overwrite
+           methods       -- if tuple contains: r -> random, z -> zeros, o -> ones
         """
     status = 0
     try:
@@ -38,10 +40,15 @@ def random_wipe(path, mode, size_to_write):
                                                                     color.PURPLE, size_to_write, color.END))
         print(u'  {}[+]{} Starting one-pass random wipe...'.format(color.ORANGE, color.END))
         pointer = 0
+        if method == 'z':
+            overwritebyte = b'\x00'
+        elif method == 'o':
+            overwritebyte = b'\xff'
         with open(path, mode) as dummy_file:
             while size_to_write > 0:
-                randbyte = bytearray(getrandbits(8) for _ in range(1))
-                dummy_file.write(randbyte)
+                if method == 'r':
+                    overwritebyte = bytearray(getrandbits(8) for _ in range(1))
+                dummy_file.write(overwritebyte)
                 size_to_write -= 1
                 if mode == 'wb':
                     pointer += 1
@@ -62,7 +69,7 @@ def random_wipe(path, mode, size_to_write):
         print('{}  [!]{} ERROR: {}'.format(color.RED,color.END,exception))
     return status
 
-def dd_random_wipe(linux_path):
+def dd_linux_wipe(linux_path, method='r'):
     '''Random wipe using dd tool on Linux OS.
        Returns 6 if uncompatible operative system is detected
        Returns 4 if error triggered trying to run subprocess
@@ -71,11 +78,19 @@ def dd_random_wipe(linux_path):
     status = 6
     if os.name == 'posix':
         try:
+            bs = '1024'
+            if method == 'r':
+                src = '/dev/zero'
+            elif method == 'z':
+                src = "<(yes $'\\ff' | tr -d \"\\n\")"
+            else:
+                src = '/dev/urandom'
+                bs = '4096'
             bytes_to_write = disk_usage(linux_path)[2]
             print('  {}[+]{} Starting to wipe {}{}{} ({}{}{} bytes) with dd tool...\r\n'.format(color.ORANGE, color.END,
                                                                                             color.ORANGE,linux_path,color.END,
                                                                                             color.PURPLE,bytes_to_write,color.END))
-            command = 'dd if=/dev/urandom of={} bs=4096 status=progress'.format(linux_path)
+            command = 'dd if={} of={} bs={} status=progress'.format(src,linux_path,bs)
             status = run_command(command)
         except Exception as exception:
             status = 4
@@ -97,7 +112,7 @@ def wipe_free_space(path):
     tempfile = os.path.join(path,'00000001')
     try:
         free_space = disk_usage(path)[2]
-        random_wipe(tempfile, 'ab+', free_space)
+        wipe_bytes(tempfile, 'ab+', free_space)
     except Exception as exception:
         print('{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
     finally:
@@ -113,7 +128,7 @@ def wipe_file(path):
     """
     try:
         bytesize_to_write = os.stat(path).st_size
-        random_wipe(path, 'wb', bytesize_to_write)
+        wipe_bytes(path, 'wb', bytesize_to_write)
         status = True
     except Exception as exception:
         print('{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
