@@ -48,6 +48,7 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 + wmi (if you want to use auto-search mode booted on a Windows OS)
 
 ## Changelist
+##### 0.9~beta version notes (29/06/2020)
 + One-pass overwrite methods already implemented: random, ones and zeros. 
 + Fixing menu bug and updating usage.
 + Added auto-search personal dirs platform independent. Added arguments for all interactive options (everything can be run from CLI or inside interactive mode)
