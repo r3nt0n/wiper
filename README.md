@@ -17,7 +17,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -i, --interactive     interactive mode, the script will guide you
   -f path, --free path  wipe all free space on given path
-  -p path, --path path  path to partition/file you want to wipe
+  -p path, --path path  path to dir/file you want to wipe
   -r path, --root path  set a custom root path if you want to wipe with auto-search modes
                         an unbooted system (e.g. /media/drive)
   -t, --temp            auto-search mode: locate actual user temp directory and wipes it
@@ -48,11 +48,18 @@ unmounted hard drive containing another OS, you should provide the root path/mou
 + wmi (if you want to use auto-search mode booted on a Windows OS)
 
 ## Changelist
++ Fixing menu bug and updating usage.
++ Added auto-search personal dirs platform independent. Added arguments for all interactive options (everything can be run from CLI or inside interactive mode)
+##### 0.6~beta version notes (20/06/2020)
++ Added swap/pagefiles auto-detection system independent and random wipes feature (opt 7)
++ Manual options (wipe free space and wipe single/multiple files) implemented.
 ##### 0.5~beta version notes (20/06/2020)
++ Added setup.py. Converted all input paths into platform independent paths (pathlib).
 + Manual options (wipe free space and wipe single/multiple files) implemented.
 
 
 ## TODO list
++ Implement temp, home_all and temp_all features.
 + Add **other one-pass overwriting methods** to:
     + choose between them in a **single-pass mode**
     + combine them in a **multi-pass mode**

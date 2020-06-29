@@ -24,7 +24,7 @@ If you run it with the OS target unmounted, you should provide the root path/mou
 
 name        = 'wiper.py'
 __author__  = 'r3nt0n'
-__version__ = '0.5'
+__version__ = '0.6~beta'
 __status__  = 'Development'
 
 ################################################################################
@@ -51,7 +51,7 @@ def read_args():
     parser.add_argument('-f', '--free',action='store',dest='free',type=str,default=False,metavar='path',
                         help='wipe all free space on given path')
     parser.add_argument('-p', '--path',action='store',dest='path',type=str, default=False,metavar='path',
-                        help='path to partition/file you want to wipe')
+                        help='path to dir/file you want to wipe')
 
     parser.add_argument('-r', '--root',action='store',dest='root_path',type=str,default=False,
                         metavar='path',help='set a custom root path if you want to wipe with auto-search modes an unbooted system (e.g. /media/drive)')
@@ -83,7 +83,7 @@ def banner():
     print(u"  |        `----,-.-----'      |o =w1p3r= |                |"); time.sleep(delay_per_line)
     print(u"  |       ______|_|_______     |__________|                |"); time.sleep(delay_per_line)
     print(u"  |      /  %%%%%%%%%%%%  \     | | | | |                  |"); time.sleep(delay_per_line)
-    print(u"  |     /  %%%%%%%%%%%%%%  \    | | | | |    wiper.py {}{}{}  |".format(appname_color,__version__,color.END)); time.sleep(delay_per_line)
+    print(u"  |     /  %%%%%%%%%%%%%%  \    | | | | |    wiper.py {}{}{}  |".format(appname_color,(__version__)[0:3],color.END)); time.sleep(delay_per_line)
     print(u"  |     ^^^^^^^^^^^^^^^^^^^^                       {}{}{}  |".format(author_color,__author__,color.END)); time.sleep(delay_per_line)
     print(u"  +--------------------------------------------------------+"); time.sleep(delay_per_line)
     print(u'  +-- {}MANUAL SELECTION MODE{} -------------------------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
@@ -115,8 +115,8 @@ def set_root_path():
     print(u'  {}[!]{} By default, {}auto-search{} mode targets the booted OS.'.format(color.ORANGE, color.END,
                                                                                       color.PURPLE,color.END))
     print(u'  {}[!]{} To wipe an unbooted system, you can provide the root'.format(color.ORANGE,color.END))
-    print(u'  {}[!]{} path where is mounted (e.g. /media/mydrive), or PRESS'.format(color.ORANGE, color.END))
-    print(u'  {}[!]{} ENTER to continue...'.format(color.ORANGE, color.END))
+    print(u'  {}[!]{} path where is mounted (e.g.: /media/mydrive).'.format(color.ORANGE, color.END))
+    print(u'  {}[!]{} SET a custom root path or PRESS ENTER to continue...'.format(color.ORANGE, color.END))
     root_path = False
     user_input = input(u'  {}[?]{} '.format(color.PURPLE, color.END))
     if os.path.isdir(user_input):
