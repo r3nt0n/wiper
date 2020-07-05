@@ -5,7 +5,7 @@
 # wiper
 Toolkit to perform **secure destruction of sensitive virtual data, temporary files and swap memories**.
 
-It has been **designed to make tasks about personal data destruction easier**, for example those which remain on work computers **when employees leave the company**.
+It has been **designed to make tasks about personal data destruction easier**, for example those which remain on work computers **when employees leave the company**. Making  the entire process easier through the interactive mode and allowing it to be automated through the CLI mode, it can be useful for both the employee and the companies when cleaning personal data on PCs that is going to be reused.
 
 You can configure your own overwrite method, choosing and combining between **ones, zeros and/or random data methods** as many times as you want (e.g.: or, rzzrozr, roozr...). By default, it performs a single one-pass with random data.
 
