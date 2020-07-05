@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # r3nt0n
 # https://github.com/r3nt0n/wiper
@@ -8,7 +8,7 @@ wiper.py - wiper run script
 
 EXIT CODE 0 - OK
 EXIT CODE 3 - KEYBOARD INTERRUPT
-EXIT CODE 4 - FEW ARGUMENTS PROVIDED
+EXIT CODE 4 - FEW/INCORRECT ARGUMENTS PROVIDED
 EXIT CODE 5 - INCOMPATIBLE OPERATIVE SYSTEM
 
 Wiper is a set of tools to perform secure destruction of sensitive virtual data, temporary files and swap memories.
@@ -41,6 +41,15 @@ from r3ntlib.color import color
 ################################################################################
 # ARGS DEFINITION
 ################################################################################
+def check_methods(method, interactive):
+    for char in method:
+        if char not in ('o', 'z', 'r'):
+            print(u'{}  [!]{} ERROR: {} method not found'.format(color.RED, color.END, char))
+            if not interactive:
+                sys.exit(4)
+    return True
+
+
 def read_args():
     parser = argparse.ArgumentParser(description='set of tools to perform secure destruction of sensitive virtual data, \
                                                   temporary files and swap memories.. Absolute and relative paths are \
@@ -52,20 +61,51 @@ def read_args():
                         help='wipe all free space on given path')
     parser.add_argument('-p', '--path',action='store',dest='path',type=str, default=False,metavar='path',
                         help='path to dir/file you want to wipe')
-
+    parser.add_argument('-m', '--method', action='store', dest='method', type=str, default='r', metavar='ozr',
+                        help='overwrite methods to apply (o: ones, z: zeros, r: random), you can combine it and choose the order')
     parser.add_argument('-r', '--root',action='store',dest='root_path',type=str,default=False,
                         metavar='path',help='set a custom root path if you want to wipe with auto-search modes an unbooted system (e.g. /media/drive)')
-    parser.add_argument('-t', '--temp', action='store_true',dest='temp',default=False,
-                        help='auto-search mode: locate actual user temp directory and wipes it')
+    # parser.add_argument('-t', '--temp', action='store_true',dest='temp',default=False,
+    #                     help='auto-search mode: locate actual user temp directory and wipes it')
     parser.add_argument('-u', '--home', action='store_true',dest='home',default=False,
                         help='auto-search mode: locate actual user home directory and wipes it')
-    parser.add_argument('-T', '--temp-all', action='store_true',dest='temp_all',default=False,
-                        help='auto-search mode: locate all users temp directory and wipes it')
+    # parser.add_argument('-T', '--temp-all', action='store_true',dest='temp_all',default=False,
+    #                     help='auto-search mode: locate all users temp directory and wipes it')
     parser.add_argument('-U', '--home-all', action='store_true',dest='home_all',default=False,
                         help='auto-search mode: locate all users home directory and wipes it')
     parser.add_argument('-s', '--swaps', action='store_true',dest='swaps',default=False,
                         help='auto-search mode: locate swap partitions/pagefiles and wipes it (be careful: UUID swap partitions also will be wiped)')
-    return parser
+
+    args = parser.parse_args()
+    interactive = args.interactive
+    wipe_free_arg = args.free
+    path = args.path
+    method = args.method
+    custom_root_path = args.root_path
+    #wipe_temp_arg = args.temp
+    wipe_home_arg = args.home
+    #wipe_temp_all_arg = args.temp_all
+    wipe_home_all_arg = args.home_all
+    wipe_swaps_arg = args.swaps
+    # Print help and exit when runs without args
+    if len(sys.argv) == 1: parser.print_help(sys.stdout); sys.exit(4)
+    # Print help and exit when runs non-interactive without path
+    if (not interactive and not wipe_free_arg and not path and not wipe_home_arg and not wipe_home_all_arg and not wipe_swaps_arg):
+        parser.print_help(sys.stdout)
+        sys.exit(4)
+    # Check if methods introduced are right
+    check_methods(method, interactive)
+    return interactive, wipe_free_arg, path, method, custom_root_path, wipe_home_arg, wipe_home_all_arg, wipe_swaps_arg
+
+
+def print_methods(method):
+    print(u'\r\n  {}[+]{} Current configuration:'.format(color.ORANGE, color.END))
+    for char in method:
+        if char == 'o': method_name = 'One-pass with ones'
+        if char == 'z': method_name = 'One-pass with zeros'
+        if char == 'r': method_name = 'One-pass with random data'
+        print(u'  {}[-]{} {}'.format(color.PURPLE, color.END, method_name))
+
 
 def banner():
     headers_color = color.PURPLE
@@ -90,12 +130,12 @@ def banner():
     print(u'  | [{}1{}] Wipe all free space in a choosen partition         |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  | [{}2{}] Wipe a single file/all files under a choosen path  |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +-- {}AUTO SEARCH MODE{} ------------------------------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}3{}] Wipe my temporal directory                         |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}4{}] Wipe my personal directory (includes tempdir)      |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}3{}] Wipe my personal directory                         |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +-- {}AUTO SEARCH MODE (elevated privileges){} --------------+'.format(headers_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}5{}] Wipe all users temporal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}6{}] Wipe all users personal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
-    print(u'  | [{}7{}] Wipe all swap partitions/pagination files          |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}4{}] Wipe all users personal directories                |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  | [{}5{}] Wipe all swap partitions/pagination files          |'.format(options_color,color.END)); time.sleep(delay_per_line)
+    print(u'  +-- {}OVERWRITE METHODS{} -----------------------------------+'.format(headers_color, color.END));time.sleep(delay_per_line)
+    print(u'  | [{}6{}] Change overwrite method                            |'.format(options_color, color.END));time.sleep(delay_per_line)
     print(u'  +--------------------------------------------------------+'); time.sleep(delay_per_line)
     print(u'  | [{}0{}] Exit                                               |'.format(options_color,color.END)); time.sleep(delay_per_line)
     print(u'  +--------------------------------------------------------+\r\n'); time.sleep(delay_per_line)
@@ -126,7 +166,7 @@ def set_root_path():
         except Exception as exception: print('{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
     return root_path
     
-def wipe(path, exclude_script=True):
+def wipe(path, method='r', exclude_script=True):
     status = 3
     if not exclude_script:
         files_to_wipe = os_ops.find_files(path)
@@ -140,19 +180,36 @@ def wipe(path, exclude_script=True):
         status = 2
     else:
         print(u'  {}[+]{} Files found: {}{}{}'.format(color.GREEN, color.END, color.PURPLE, len(files_to_wipe), color.END))
+
+        #if method == 'z':
+            #print(u'  {}[+]{} Starting one-pass zeros wipe...'.format(color.ORANGE, color.END))
+        #elif method == 'o':
+            #print(u'  {}[+]{} Starting one-pass ones wipe...'.format(color.ORANGE, color.END))
+        #else:
+            #print(u'  {}[+]{} Starting one-pass random wipe...'.format(color.ORANGE, color.END))
+
         # Wipe each file
         counter = 0
         for f in files_to_wipe:
-            wiped = wiper_ops.wipe_file(f)
-            if wiped: counter += 1
+            wiped_status = False
+            try:
+                bytesize_to_write = os.stat(f).st_size
+                print(u'\r\n  {}[+]{} Overwriting {}{}{} ({}{}{} bytes)'.format(color.ORANGE, color.END,
+                                                                            color.ORANGE, f, color.END,
+                                                                            color.PURPLE, bytesize_to_write, color.END))
+                wiped_status = wiper_ops.wipe_bytes(f, 'wb', bytesize_to_write, method)
+            except Exception as exception:
+                print(u'{}  [!]{} ERROR: {}'.format(color.RED, color.END, exception))
+                status = 1
+            if wiped_status == 0: counter += 1
         print(u'  {}[+]{} Files wiped: {}{}{}'.format(color.GREEN, color.END,color.PURPLE,counter,color.END))
         # Remove the empty tree if path given was a dir AFTER ALL OVERWRITES
-        if os.path.isdir(path):
+        if (os.path.isdir(path) and status == 3):
             try:
-                print(u'  {}[+]{} Removed empty tree (path given was a dir)'.format(color.GREEN, color.END))
+                print(u'  {}[+]{} Empty tree removed (path given was a dir)'.format(color.GREEN, color.END))
                 rmtree(path)
                 status = 0
-            except Exception as exception: print('{}  [!]{} ERROR: {}'.format(color.RED,color.END,exception)); status=1
+            except Exception as exception: print('{}  [!]{} ERROR: {}'.format(color.RED,color.END,exception)); status=5
     return status
 
 
@@ -161,23 +218,9 @@ def main():
         print(u'{}[!]{} Incompatible Operative System detected. Exiting...'.format(color.RED, color.END))
         sys.exit(5)
     else:
-        # Load arguments
-        parser = read_args()
-        args = parser.parse_args()
-        interactive = args.interactive
-        wipe_free_arg = args.free
-        path = args.path
-        custom_root_path = args.root_path
-        wipe_temp_arg = args.temp
-        wipe_home_arg = args.home
-        wipe_temp_all_arg = args.temp_all
-        wipe_home_all_arg = args.home_all
-        wipe_swaps_arg = args.swaps
-        # Print help and exit when runs without args
-        if len(sys.argv) == 1: parser.print_help(sys.stdout); sys.exit(4)
-        # Print help and exit when runs non-interactive without path
-        if (not interactive and not wipe_free_arg and not path and not wipe_temp_arg and not wipe_home_arg and not wipe_temp_arg and not wipe_temp_all_arg and not wipe_swaps_arg):
-            parser.print_help(sys.stdout); sys.exit(4)
+        # Read CLI arguments
+        interactive, wipe_free_arg, path, method, custom_root_path, wipe_home_arg, wipe_home_all_arg, wipe_swaps_arg = read_args()
+
         if interactive:
             # Clear screen and print banner with options in interactive mode
             os_ops.clear()
@@ -190,7 +233,7 @@ def main():
             if interactive:
                 # Get opt and check it
                 path = ''
-                opt = input(u'\r\n  {}[?]{} Choose an option [{}0-9{}]: '.format(color.PURPLE,color.END,color.ORANGE,color.END))
+                opt = input(u'\r\n  {}[?]{} Choose an option (help to show again) [{}0-9{}]: '.format(color.PURPLE,color.END,color.ORANGE,color.END))
             # 0. Wipes all free space in the given paths
             if (opt == '1' or wipe_free_arg):
                 # Get the path from user input
@@ -207,13 +250,13 @@ def main():
             elif (opt == '2' or path):
                 # Get the path from user input
                 if not path: path = input(u'  {}[?]{} Enter the path you want to wipe: '.format(color.PURPLE, color.END))
-                wipe(path)
+                wipe(path, method)
 
-            elif (opt == '3' or wipe_temp_arg):
-                print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
-                continue
+            # elif (opt == '3' or wipe_temp_arg):
+            #     print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
+            #     continue
             # Wipes user personal dir
-            elif (opt == '4' or wipe_home_arg):
+            elif (opt == '3' or wipe_home_arg):
                 personal_dirs = os_ops.get_personal_dirs()
                 if not personal_dirs:
                     print(u'  {}[!]{} ERROR: Any home directory found'.format(color.RED, color.END))
@@ -234,15 +277,15 @@ def main():
                         if (type(pdir) is not int or int(pdir) >= len(personal_dirs)):
                             print(u'  {}[!]{} ERROR: Bad option choosen'.format(color.RED, color.END))
                             continue  # Back to menu
-                    wipe(pdir)
-            elif (opt == '5' or wipe_temp_all_arg):
-                print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
-                continue
-            elif (opt == '6' or wipe_home_all_arg):
+                    wipe(pdir, method)
+            # elif (opt == '5' or wipe_temp_all_arg):
+            #     print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
+            #     continue
+            elif (opt == '4' or wipe_home_all_arg):
                 print(u'  {}[x]{} This feature is not still implemented.'.format(color.ORANGE, color.END))
                 continue
             # Wipes swaps/pagefiles
-            elif (opt == '7' or wipe_swaps_arg):
+            elif (opt == '5' or wipe_swaps_arg):
                 print(u'  {}[-]{} Searching swap/pagefiles...'.format(color.ORANGE, color.END))
                 swaplist = os_ops.get_swaps(custom_root_path)
                 if not swaplist:
@@ -259,16 +302,23 @@ def main():
                     confirm = input(u'  {}[?]{} Do you want to confirm? (y/n) > '.format(color.PURPLE,color.END))
                     if (confirm.lower().startswith('y')):
                         if (os.name == 'nt' or custom_root_path):
-                            wipe(swaplist)
+                            wipe(swaplist, method)
                         elif (os.name == 'posix'):
                             for swap in swaplist:
-                                status = wiper_ops.dd_linux_wipe(swap)
+                                status = wiper_ops.dd_linux_wipe(swap, method)
                                 if str(status) == '0':
                                     print(u'  {}[+]{} {}{}{} was succesfully wiped.'.format(color.GREEN,color.END,
                                                                                             color.PURPLE,swap,color.END))
-
+            elif (opt == '6'):
+                print_methods(method)
+                m = input(u'\r\n  {}[?]{} Set the new configuration (examples: o, zr, ozozr): '.format(color.PURPLE,color.END))
+                if check_methods(m, interactive):
+                    method = m
+                    print_methods(method)
             elif (opt == '0' or opt == 'quit' or opt == 'exit'):
                 interactive = False
+            elif (opt.lower() == 'help'):
+                banner()
             else:
                 print(u'  {}[!]{} Incorrect option.'.format(color.RED, color.END))
                 continue
