@@ -241,7 +241,7 @@ def main():
                     path = wipe_free_arg
                 else:
                     path = input(u'  {}[?]{} Enter the path you want to wipe all free space: '.format(color.PURPLE,color.END))
-                status = wiper_ops.wipe_free_space(path)
+                status = wiper_ops.wipe_free_space(path, method)
                 if status == 0:
                     print(u'  {}[+]{} The free space was succesfully wiped.'.format(color.GREEN, color.END))
                 else:
