@@ -33,6 +33,12 @@ def find_files(root_path, files_to_exclude=()):
        files_to_exclude -- (optional) list of absolute path to files that will
                            be excluded from the return list
     """
+    if os.path.isfile(root_path):
+        root_path = os.path.abspath(root_path)
+        if root_path in files_to_exclude:
+            return []
+        return [root_path]
+    
     files_list = []
     for root, dirs, files in os.walk(root_path, topdown=False):
         for name in files:
