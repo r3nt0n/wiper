@@ -174,7 +174,7 @@ def wipe(path, method='r', exclude_script=True):
         # Get actual script absolute path to exclude from deletion task
         script_abspath = os.path.abspath(__file__)
         # Get all files included in the given path
-        files_to_wipe = os_ops.find_files(path, script_abspath)
+        files_to_wipe = os_ops.find_files(path, [script_abspath])
     if not files_to_wipe:
         print(u'  {}[!]{} ERROR: No files found'.format(color.RED, color.END))
         status = 2
